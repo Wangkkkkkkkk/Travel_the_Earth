@@ -1,0 +1,18 @@
+<RCC>
+  <qresource prefix="images">
+    <file>images/中国_314-279.png</file>
+    <file>images/旅行地球_541-560.png</file>
+    <file>images/中国.png</file>
+    <file>images/中国_480-428.png</file>
+    <file>images/新疆维吾尔自治区.png</file>
+    <file>images/湖南省.png</file>
+    <file>images/新疆.png</file>
+    <file>images/湖南-388-396.png</file>
+  </qresource>
+  <qresource prefix="icons">
+    <file>icons/收起文本域_collapse-text-input.png</file>
+    <file>icons/关闭_close.png</file>
+    <file>icons/减_minus.png</file>
+    <file>icons/展开文本域_expand-text-input.png</file>
+  </qresource>
+</RCC>
