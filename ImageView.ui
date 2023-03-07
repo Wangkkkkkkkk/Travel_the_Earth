@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>893</width>
+    <width>850</width>
     <height>686</height>
    </rect>
   </property>
@@ -22,6 +22,12 @@
       <width>1080</width>
       <height>720</height>
      </rect>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>1080</width>
+      <height>720</height>
+     </size>
     </property>
     <property name="styleSheet">
      <string notr="true">border:none;</string>
@@ -47,6 +53,12 @@
      </property>
      <item>
       <widget class="QGraphicsView" name="graphicsView">
+       <property name="maximumSize">
+        <size>
+         <width>1080</width>
+         <height>720</height>
+        </size>
+       </property>
        <property name="styleSheet">
         <string notr="true">padding: 0px;
 border: none;</string>

@@ -12,11 +12,12 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(893, 686)
+        MainWindow.resize(850, 686)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.groupBox = QtWidgets.QGroupBox(parent=self.centralwidget)
         self.groupBox.setGeometry(QtCore.QRect(50, 10, 1080, 720))
+        self.groupBox.setMaximumSize(QtCore.QSize(1080, 720))
         self.groupBox.setStyleSheet("border:none;")
         self.groupBox.setTitle("")
         self.groupBox.setObjectName("groupBox")
@@ -25,6 +26,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.graphicsView = QtWidgets.QGraphicsView(parent=self.groupBox)
+        self.graphicsView.setMaximumSize(QtCore.QSize(1080, 720))
         self.graphicsView.setStyleSheet("padding: 0px;\n"
 "border: none;")
         self.graphicsView.setObjectName("graphicsView")
