@@ -3,30 +3,14 @@
 from PyQt6.QtWidgets import (QApplication, QWidget, QFileDialog, QMainWindow,
                              QGraphicsView, QGraphicsItem, QGraphicsRectItem,
                              QGraphicsItemGroup, QGraphicsLineItem, QGraphicsEllipseItem,
-                             QGraphicsTextItem)
-
+                             QGraphicsTextItem, QPushButton)
+from PyQt6 import QtGui
 import cv2
 import sys
 
 from ImageView import *
+import res_rc
 
-market_dicts = {
-    "长沙": [5754, 4683],
-    "张家界": [5383, 4521],
-    "常德": [5572, 4535],
-    "益阳": [5681, 4617],
-    "汨罗": [5782, 4571],
-    "浏阳": [5869, 4682],
-    "娄底": [5617, 4767],
-    "株洲": [5790, 4754],
-    "衡阳": [5724, 4917],
-    "郴州": [5786, 5100],
-    "怀化": [5310, 4803]
-}
-
-province_dicts = {
-    "湖南省": [5400, 4600],
-}
 
 class ImageWin(QMainWindow, QWidget):
     def __init__(self):
@@ -67,21 +51,62 @@ class ImageWin(QMainWindow, QWidget):
         self.grp_market = QGraphicsItemGroup()  # 市级
         self.grp_province = QGraphicsItemGroup()  # 省级
 
-        self.ellipses = {}
-        self.market_texts = {}
-        for key in market_dicts.keys():
-            self.ellipses[key] = QGraphicsEllipseItem()
-            self.market_texts[key] = QGraphicsTextItem(key)
-            self.market_texts[key].setScale(1.5)
+        self.china_dicts = {
+            "湖南省": {
+                "info": [5400, 4600, 0],
+                "market": {
+                    "长沙": [5754, 4683, 0],
+                    "张家界": [5383, 4521, 0],
+                    "常德": [5572, 4535, 0],
+                    "益阳": [5681, 4617, 0],
+                    "汨罗": [5782, 4571, 0],
+                    "浏阳": [5869, 4682, 0],
+                    "娄底": [5617, 4767, 0],
+                    "株洲": [5790, 4754, 0],
+                    "衡阳": [5724, 4917, 0],
+                    "郴州": [5786, 5100, 0],
+                    "怀化": [5310, 4803, 0]
+                }
+            },
+        }
 
-        self.province_texts = {}
-        for key in province_dicts.keys():
-            self.province_texts[key] = QGraphicsTextItem(key)
-            self.province_texts[key].setScale(2)
+        self.buttons_market = {}
+        self.buttons_province = {}
+        self.lineedit_finding = {}
+
+        for key_province in self.china_dicts.keys():
+            self.buttons_province[key_province] = QPushButton(key_province)
+            self.buttons_province[key_province].setStyleSheet(
+                "QPushButton{\n"
+                "    font-family:'宋体';font-size:24px;\n"
+                "    background-color: rgba(0, 0, 0, 0);\n"
+                "    border:none;\n"
+                "}\n")
+            self.lineedit_finding[key_province] = QtWidgets.QLineEdit(
+                "探索度: " + str(self.china_dicts[key_province]["info"][2]) + " %")
+            self.lineedit_finding[key_province].setStyleSheet(
+                "border:none;\n"
+                "font-family:'宋体';font-size:12px;\n"
+                "background-color: rgba(0, 0, 0, 0);\n")
+
+            for key_market in self.china_dicts[key_province]["market"].keys():
+                self.buttons_market[key_market] = QPushButton(key_market)
+                icon = QtGui.QIcon()
+                icon.addPixmap(QtGui.QPixmap(":/icons/icons/圆形_round.png"),
+                               QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+                self.buttons_market[key_market].setIcon(icon)
+                self.buttons_market[key_market].setStyleSheet(
+                    "QPushButton{\n"
+                    "    font-family:'宋体';font-size:18px;"
+                    "    background-color: rgba(255, 132, 139, 30);"
+                    "    border:none;\n"
+                    "}\n")
+                self.buttons_market[key_market].clicked.connect(lambda: self.updata_finding())
 
         self.show()
 
-    def addScenes(self, img):  # 绘制图形
+    # 载入地图
+    def addScenes(self, img):
         self.org = img
         if self.pixmapItem != None:
             originX = self.pixmapItem.x()
@@ -99,36 +124,69 @@ class ImageWin(QMainWindow, QWidget):
         self.pixmapItem.setScale(self.ratio)  # 缩放
         self.pixmapItem.setPos(originX, originY)
 
-    def add_marketgroup(self):
+    #  显示市级标志
+    def add_market(self):
         gitup = self.ratio / self.ratio_orgin * self.ratio_orgin
-        # print("change x, y:", self.change_x, " ", self.change_y, " gitup:", gitup)
-        self.scene.removeItem(self.grp_market)
+        for key_province in self.china_dicts.keys():
+            for key_market in self.china_dicts[key_province]["market"].keys():
+                self.buttons_market[key_market].show()
+                self.buttons_market[key_market].move(
+                    int(self.china_dicts[key_province]["market"][key_market][0] * gitup + self.change_x - self.size / 2),
+                    int(self.china_dicts[key_province]["market"][key_market][1] * gitup + self.change_y - self.size / 2))
+                self.scene.addWidget(self.buttons_market[key_market])
 
-        for key in self.ellipses.keys():
-            self.grp_market.removeFromGroup(self.ellipses[key])
-            self.ellipses[key].setRect(market_dicts[key][0] * gitup + self.change_x - self.size / 2,
-                                       market_dicts[key][1] * gitup + self.change_y - self.size / 2,
-                                       self.size, self.size)
-            self.market_texts[key].setPos(
-                market_dicts[key][0] * gitup + self.change_x - self.size / 2 + self.text_offset,
-                market_dicts[key][1] * gitup + self.change_y - self.size / 2 - self.text_offset)
-            self.grp_market.addToGroup(self.ellipses[key])
-            self.grp_market.addToGroup(self.market_texts[key])
-
-        self.scene.addItem(self.grp_market)
-
-    def add_provincegroup(self):
+    # 显示省级标志
+    def add_province(self):
         gitup = self.ratio / self.ratio_orgin * self.ratio_orgin
-        self.scene.removeItem(self.grp_province)
+        for key_province in self.china_dicts.keys():
+            self.buttons_province[key_province].show()
+            self.buttons_province[key_province].move(
+                int(self.china_dicts[key_province]["info"][0] * gitup + self.change_x + (self.ratio - self.ratio_up) * 120),
+                int(self.china_dicts[key_province]["info"][1] * gitup + self.change_y + (self.ratio - self.ratio_up) * 120))
+            self.scene.addWidget(self.buttons_province[key_province])
 
-        for key in self.province_texts.keys():
-            self.grp_province.removeFromGroup(self.province_texts[key])
-            self.province_texts[key].setPos(
-                province_dicts[key][0] * gitup + self.change_x + (self.ratio - self.ratio_up) * 120,
-                province_dicts[key][1] * gitup + self.change_y + (self.ratio - self.ratio_up) * 120)
-            self.grp_province.addToGroup(self.province_texts[key])
+            self.lineedit_finding[key_province].show()
+            self.lineedit_finding[key_province].setText(
+                "探索度: " + str(self.china_dicts[key_province]["info"][2]) + " %")
+            self.lineedit_finding[key_province].move(
+                int(self.china_dicts[key_province]["info"][0] * gitup + self.change_x + (self.ratio - self.ratio_up) * 120),
+                int(self.china_dicts[key_province]["info"][1] * gitup + self.change_y + (self.ratio - self.ratio_up) * 120 + 25))
+            self.scene.addWidget(self.lineedit_finding[key_province])
 
-        self.scene.addItem(self.grp_province)
+    #  隐藏按钮
+    def hide_pushbutton(self, buttons, lineedit=None):
+        for key in buttons.keys():
+            buttons[key].hide()
+            self.scene.addWidget(buttons[key])
+        if lineedit != None:
+            for key in lineedit.keys():
+                lineedit[key].hide()
+                self.scene.addWidget(lineedit[key])
+
+    # 判断按钮是否显示，更新按钮位置
+    def updata_button(self):
+        if self.ratio > self.ratio_pop:  # 缩放比例是否大于 ratio_pop
+            self.add_market()  # 实现市级标志
+        else:
+            self.hide_pushbutton(self.buttons_market)  # 隐藏市级标志
+
+        if self.ratio_up < self.ratio < self.ratio_pop - 0.02:  # 缩放比例是否处于省级范围
+            self.add_province()  # 显示省级标志
+        else:
+            self.hide_pushbutton(self.buttons_province, self.lineedit_finding)  # 隐藏省级标志
+
+    def updata_finding(self):
+        sender = self.sender()  # 获得哪个按钮触发的信息
+
+        for key_province in self.china_dicts.keys():
+            num = 0
+            for key_market in self.china_dicts[key_province]["market"].keys():
+                if key_market == sender.text():
+                    self.china_dicts[key_province]["market"][key_market][2] += 1
+                if self.china_dicts[key_province]["market"][key_market][2] > 0:
+                    num += 1
+            self.china_dicts[key_province]["info"][2] = \
+                int(float(num) / float(len(self.china_dicts[key_province]["market"])) * 100)
 
     def scene_MousePressEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:  # 左键按下
@@ -142,12 +200,8 @@ class ImageWin(QMainWindow, QWidget):
 
             self.change_x += self.MouseMove.x()
             self.change_y += self.MouseMove.y()
-            # print("change x, y:", self.change_x, " ", self.change_y)
 
-            if self.ratio > self.ratio_pop:
-                self.add_marketgroup()
-            elif self.ratio > self.ratio_up:
-                self.add_provincegroup()
+            self.updata_button()
 
     # 定义滚轮方法。当鼠标在图元范围之外，以图元中心为缩放原点；当鼠标在图元之中，以鼠标悬停位置为缩放中心
     def scene_wheelEvent(self, event):
@@ -185,14 +239,6 @@ class ImageWin(QMainWindow, QWidget):
 
                     self.change_x -= delta_x
                     self.change_y -= delta_y
-
-            self.add_marketgroup()
-            self.add_provincegroup()
-            if self.ratio_up > self.ratio or self.ratio > self.ratio_pop - 0.05:
-                self.scene.removeItem(self.grp_province)
-            if self.ratio < self.ratio_pop:
-                self.scene.removeItem(self.grp_market)
-
         else:
             # print("滚轮下滚")
             self.ratio -= self.zoom_step
@@ -225,12 +271,7 @@ class ImageWin(QMainWindow, QWidget):
                     self.change_x += delta_x
                     self.change_y += delta_y
 
-            self.add_marketgroup()
-            self.add_provincegroup()
-            if self.ratio_up > self.ratio or self.ratio > self.ratio_pop - 0.05:
-                self.scene.removeItem(self.grp_province)
-            if self.ratio < self.ratio_pop:
-                self.scene.removeItem(self.grp_market)
+        self.updata_button()
 
 
 if __name__ == "__main__":
