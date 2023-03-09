@@ -48,9 +48,6 @@ class ImageWin(QMainWindow, QWidget):
         self.scene.mouseMoveEvent = self.scene_mouseMoveEvent
         self.scene.wheelEvent = self.scene_wheelEvent
 
-        self.grp_market = QGraphicsItemGroup()  # 市级
-        self.grp_province = QGraphicsItemGroup()  # 省级
-
         self.china_dicts = {
             "湖南省": {
                 "info": [5400, 4600, 0],
@@ -70,6 +67,7 @@ class ImageWin(QMainWindow, QWidget):
             },
         }
 
+        # 初始化省级市级按钮
         self.buttons_market = {}
         self.buttons_province = {}
         self.lineedit_finding = {}
@@ -82,15 +80,17 @@ class ImageWin(QMainWindow, QWidget):
                 "    background-color: rgba(0, 0, 0, 0);\n"
                 "    border:none;\n"
                 "}\n")
+            self.buttons_province[key_province].hide()
             self.lineedit_finding[key_province] = QtWidgets.QLineEdit(
                 "探索度: " + str(self.china_dicts[key_province]["info"][2]) + " %")
             self.lineedit_finding[key_province].setStyleSheet(
                 "border:none;\n"
                 "font-family:'宋体';font-size:12px;\n"
                 "background-color: rgba(0, 0, 0, 0);\n")
+            self.lineedit_finding[key_province].hide()
 
             for key_market in self.china_dicts[key_province]["market"].keys():
-                self.buttons_market[key_market] = QPushButton(key_market)
+                self.buttons_market[key_market] = QPushButton(key_market, parent=self.graphicsView)
                 icon = QtGui.QIcon()
                 icon.addPixmap(QtGui.QPixmap(":/icons/icons/圆形_round.png"),
                                QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -101,7 +101,106 @@ class ImageWin(QMainWindow, QWidget):
                     "    background-color: rgba(255, 132, 139, 30);"
                     "    border:none;\n"
                     "}\n")
-                self.buttons_market[key_market].clicked.connect(lambda: self.updata_finding())
+                self.buttons_market[key_market].clicked.connect(self.show_info)
+                self.buttons_market[key_market].hide()
+
+        # 初始化信息显示
+        self.frame = QtWidgets.QFrame(parent=self.graphicsView)
+        self.frame.setGeometry(QtCore.QRect(590, 10, 200, 300))
+        self.frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.frame.setObjectName("frame")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame)
+        self.verticalLayout_2.setSpacing(0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.frame_top = QtWidgets.QFrame(parent=self.frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
+                                           QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(1)
+        sizePolicy.setHeightForWidth(self.frame_top.sizePolicy().hasHeightForWidth())
+        self.frame_top.setSizePolicy(sizePolicy)
+        self.frame_top.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.frame_top.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.frame_top.setObjectName("frame_top")
+        self.frame_top.setStyleSheet("background-color: rgb(51, 133, 255);\n")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.frame_top)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label_name = QtWidgets.QLabel(parent=self.frame_top)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+                                           QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(8)
+        sizePolicy.setHeightForWidth(self.label_name.sizePolicy().hasHeightForWidth())
+        self.label_name.setSizePolicy(sizePolicy)
+        self.label_name.setObjectName("label_name")
+        self.horizontalLayout.addWidget(self.label_name)
+        self.pushButton = QtWidgets.QPushButton(parent=self.frame_top)
+        self.pushButton.setStyleSheet("border-image: url(:/icons/icons/关闭_close.png);")
+        self.pushButton.setText("")
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.close_info)
+        self.horizontalLayout.addWidget(self.pushButton)
+        self.verticalLayout_2.addWidget(self.frame_top)
+        self.frame_bottom = QtWidgets.QFrame(parent=self.frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
+                                           QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(9)
+        sizePolicy.setHeightForWidth(self.frame_bottom.sizePolicy().hasHeightForWidth())
+        self.frame_bottom.setSizePolicy(sizePolicy)
+        self.frame_bottom.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.frame_bottom.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.frame_bottom.setObjectName("frame_bottom")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.frame_bottom)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.label_closer = QtWidgets.QLabel(parent=self.frame_bottom)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
+                                           QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_closer.sizePolicy().hasHeightForWidth())
+        self.label_closer.setSizePolicy(sizePolicy)
+        self.label_closer.setObjectName("label_closer")
+        self.label_closer.setStyleSheet("background-color: rgb(255, 255, 255);\n")
+        self.verticalLayout_3.addWidget(self.label_closer)
+        self.label_location = QtWidgets.QLabel(parent=self.frame_bottom)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
+                                           QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_location.sizePolicy().hasHeightForWidth())
+        self.label_location.setSizePolicy(sizePolicy)
+        self.label_location.setObjectName("label_location")
+        self.label_location.setStyleSheet("background-color: rgb(255, 255, 255);\n")
+        self.verticalLayout_3.addWidget(self.label_location)
+        self.label_photo = QtWidgets.QLabel(parent=self.frame_bottom)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
+                                           QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(5)
+        sizePolicy.setHeightForWidth(self.label_photo.sizePolicy().hasHeightForWidth())
+        self.label_photo.setSizePolicy(sizePolicy)
+        self.label_photo.setObjectName("label_photo")
+        self.label_photo.setStyleSheet("background-color: rgb(255, 255, 255);\n")
+        self.verticalLayout_3.addWidget(self.label_photo)
+        self.label_info = QtWidgets.QLabel(parent=self.frame_bottom)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
+                                           QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(5)
+        sizePolicy.setHeightForWidth(self.label_info.sizePolicy().hasHeightForWidth())
+        self.label_info.setSizePolicy(sizePolicy)
+        self.label_info.setObjectName("label_info")
+        self.label_info.setStyleSheet("background-color: rgb(255, 255, 255);\n")
+        self.verticalLayout_3.addWidget(self.label_info)
+        self.verticalLayout_2.addWidget(self.frame_bottom)
+
+        self.frame.hide()
 
         self.show()
 
@@ -174,6 +273,21 @@ class ImageWin(QMainWindow, QWidget):
             self.add_province()  # 显示省级标志
         else:
             self.hide_pushbutton(self.buttons_province, self.lineedit_finding)  # 隐藏省级标志
+
+    def show_info(self):
+        sender = self.sender()  # 获得哪个按钮触发的信息
+
+        for key_province in self.china_dicts.keys():
+            for key_market in self.china_dicts[key_province]["market"].keys():
+                if key_market == sender.text():
+                    self.label_name.setText(" " + key_market)
+                    self.label_closer.setText(" " + "市级")
+                    self.frame.show()
+                    self.scene.addWidget(self.frame)
+
+    def close_info(self):
+        self.frame.hide()
+        self.scene.addWidget(self.frame)
 
     def updata_finding(self):
         sender = self.sender()  # 获得哪个按钮触发的信息
